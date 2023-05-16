@@ -14,9 +14,8 @@ namespace Model
 
         public UserRepository()
         {
-            // var client = new MongoClient(/*"miljø variabel"*/); // vores mongo conn string
-
-            var client = new MongoClient("mongodb://root:root@localhost:27018/?authSource=admin"); // vores mongo conn string
+            string connectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTION_STRING"); // mongo conn string miljøvariabel
+            var client = new MongoClient(connectionString);
             var database = client.GetDatabase("Auctionhouse"); // vores database
             _user = database.GetCollection<User>("User");
         }
