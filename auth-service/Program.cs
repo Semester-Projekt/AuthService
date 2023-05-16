@@ -5,66 +5,80 @@ using Microsoft.IdentityModel.Tokens;
 using NLog;
 using NLog.Web;
 
-var logger =
+
+
+    var logger =
 NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
-logger.Debug("init main");
+    logger.Debug("init main");
 
-
-
-
-
-var builder = WebApplication.CreateBuilder(args);
-
-
-string mySecret = Environment.GetEnvironmentVariable("Secret") ?? "none";
-string myIssuer = Environment.GetEnvironmentVariable("Issuer") ?? "none";
-builder.Services
-.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-.AddJwtBearer(options =>
+try // try/catch/finally fra m10.01 opgave b step 4
 {
-    options.TokenValidationParameters = new TokenValidationParameters()
+
+    var builder = WebApplication.CreateBuilder(args);
+
+
+    string mySecret = Environment.GetEnvironmentVariable("Secret") ?? "none";
+    string myIssuer = Environment.GetEnvironmentVariable("Issuer") ?? "none";
+    builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = myIssuer,
-        ValidAudience = "http://localhost",
-        IssuerSigningKey =
-     new SymmetricSecurityKey(Encoding.UTF8.GetBytes(mySecret))
-    };
-});
+        options.TokenValidationParameters = new TokenValidationParameters()
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = myIssuer,
+            ValidAudience = "http://localhost",
+            IssuerSigningKey =
+         new SymmetricSecurityKey(Encoding.UTF8.GetBytes(mySecret))
+        };
+    });
 
-// Add services to the container.
-builder.Services.AddSingleton<UserRepository>();
+    // Add services to the container.
+    builder.Services.AddSingleton<UserRepository>();
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+    builder.Services.AddControllers();
+    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
 
 
-// builder.Logging.ClearProviders(); //Opgave 10.01B step 3 DENNE LINJE FUCKER NOGET UP ??????
+    // builder.Logging.ClearProviders(); //Opgave 10.01B step 3 DENNE LINJE FUCKER NOGET UP ??????
 
-builder.Host.UseNLog();
+    builder.Host.UseNLog();
 
-var app = builder.Build();
+    var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    // Configure the HTTP request pipeline.
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+
+
+    app.UseHttpsRedirection();
+
+    app.UseAuthentication();
+
+    app.UseAuthorization();
+
+    app.MapControllers();
+
+    app.Run();
+
 }
 
+catch (Exception ex)
+{
+    logger.Error(ex, "Stopped program because of exception");
+    throw;
+}
 
-
-app.UseHttpsRedirection();
-
-app.UseAuthentication();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
+finally
+{
+    NLog.LogManager.Shutdown();
+}

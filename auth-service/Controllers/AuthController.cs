@@ -25,6 +25,13 @@ public class AuthController : ControllerBase
         _logger = logger;
         _userRepository = userRepository;
 
+        
+        //Logger host information
+        var hostName = System.Net.Dns.GetHostName();
+        var ips = System.Net.Dns.GetHostAddresses(hostName);
+        var _ipaddr = ips.First().MapToIPv4().ToString();
+        _logger.LogInformation(1, $"Auth service responding from {_ipaddr}");
+        
     }
 
 

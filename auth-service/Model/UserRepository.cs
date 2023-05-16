@@ -16,7 +16,7 @@ namespace Model
         {
             // var client = new MongoClient(/*"miljø variabel"*/); // vores mongo conn string
 
-            var client = new MongoClient("mongodb://admin:1234@localhost:27018/?authSource=admin"); // vores mongo conn string
+            var client = new MongoClient("mongodb://root:root@localhost:27018/?authSource=admin"); // vores mongo conn string
             var database = client.GetDatabase("Auctionhouse"); // vores database
             _user = database.GetCollection<User>("User");
         }

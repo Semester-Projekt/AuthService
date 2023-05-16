@@ -39,8 +39,13 @@
 
   <ItemGroup>
     <None Remove="Model\" />
+        <None Include="NLog.config">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Remove="Monitor\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Model\" />
+    <Folder Include="Monitor\" />
   </ItemGroup>
 </Project>
