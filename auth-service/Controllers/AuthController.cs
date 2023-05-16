@@ -34,7 +34,7 @@ public class AuthController : ControllerBase
         
     }
 
-
+    
     [HttpPost("addNewUser"), DisableRequestSizeLimit]
     public async Task<IActionResult> Post([FromBody] User? user)
     {
@@ -77,7 +77,7 @@ public class AuthController : ControllerBase
         _config["Issuer"],
         "http://localhost",
         claims,
-        expires: DateTime.Now.AddMinutes(60),
+        expires: DateTime.Now.AddDays(1),
         signingCredentials: credentials);
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
