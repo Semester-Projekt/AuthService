@@ -77,7 +77,7 @@ public class AuthController : ControllerBase
         _config["Issuer"],
         "http://localhost",
         claims,
-        expires: DateTime.Now.AddDays(1),
+        expires: DateTime.Now.AddMonths(1),
         signingCredentials: credentials);
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
