@@ -36,9 +36,7 @@ try // try/catch/finally fra m10.01 opgave b step 4
         };
     });
 
-    // Add services to the container.
-    builder.Services.AddSingleton<UserRepository>();
-
+    
     builder.Services.AddControllers();
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddEndpointsApiExplorer();

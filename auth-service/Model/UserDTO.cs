@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Model
 {
-	public class User
+	public class UserDTO
 	{
 		[BsonId]
 		[BsonRepresentation(BsonType.ObjectId)]
@@ -31,7 +31,7 @@ namespace Model
         [BsonElement("UserAddress")]
         public string? UserAddress { get; set; }
 
-        public User(string userName, string userPassword, string userEmail, int userPhone, string userAddress)
+        public UserDTO(string userName, string userPassword, string userEmail, int userPhone, string userAddress)
         {
 			this.UserName = userName;
 			this.UserPassword = userPassword;
@@ -40,7 +40,7 @@ namespace Model
 			this.UserAddress = userAddress;
         }
 
-        public User()
+        public UserDTO()
 		{
 
 		}
