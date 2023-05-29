@@ -4,7 +4,18 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>auth_service</RootNamespace>
+    <Company>Daniels gruppe</Company>
+    <Authors>
+        Daniel B
+        Daniel D
+        Mads K
+        Mads-Emil J
+    </Authors>
+    <Copyright>2023 EAA</Copyright>
+    <InformationalVersion>1.0.0</InformationalVersion>
+    <Description>
+    Added version endpoint
+    </Description>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'https' " />

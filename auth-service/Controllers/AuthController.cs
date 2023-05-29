@@ -1,11 +1,26 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using Model;
+using Controllers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Channels;
+using System.Text.Json;
+using System.Net;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Model;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Http;
+using MongoDB.Driver;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using System.IO;
+using System.Diagnostics;
 
 namespace Controllers;
 
@@ -34,6 +49,38 @@ public class AuthController : ControllerBase
 
         _logger.LogInformation($"USER_SERVICE_URL: {_config["USER_SERVICE_URL"]}");
     }
+
+
+// VERSION_ENDEPUNKT
+    [HttpGet("version")]
+    public async Task<Dictionary<string, string>> GetVersion()
+    {
+        var properties = new Dictionary<string, string>();
+        var assembly = typeof(Program).Assembly;
+
+        properties.Add("service", "Authentication");
+        var ver = FileVersionInfo.GetVersionInfo(typeof(Program).Assembly.Location).ProductVersion;
+        properties.Add("version", ver!);
+
+        try
+        {
+            var hostName = System.Net.Dns.GetHostName();
+            var ips = await System.Net.Dns.GetHostAddressesAsync(hostName);
+            var ipa = ips.First().MapToIPv4().ToString();
+            properties.Add("hosted-at-address", ipa);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message);
+            properties.Add("hosted-at-address", "Could not resolve IP-address");
+        }
+
+        return properties;
+    }
+
+
+
+
 
     private string GenerateJwtToken(string username)
     {
