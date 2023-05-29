@@ -60,7 +60,7 @@ public class AuthController : ControllerBase
 
 
     [AllowAnonymous]
-    [HttpPost("login")]
+    [HttpPost("login/{userId}")]
     public async Task<IActionResult> Login([FromBody] UserDTO user, int userId) // her skal hentes bruger fra mongo
     {
         _logger.LogInformation("AuthService - Login function hit");
