@@ -30,6 +30,9 @@ public class AuthController : ControllerBase
         var _ipaddr = ips.First().MapToIPv4().ToString();
         _logger.LogInformation(1, $"Auth service responding from {_ipaddr}");
 
+        _logger.LogInformation($"Connecting to rabbitMQ on {_config["rabbithostname"]}");
+
+        _logger.LogInformation($"USER_SERVICE_URL: {_config["USER_SERVICE_URL"]}");
     }
 
     private string GenerateJwtToken(string username)
@@ -57,15 +60,19 @@ public class AuthController : ControllerBase
 
 
     [AllowAnonymous]
-    [HttpPost("login")]
+    [HttpPost("login/{userId}")]
     public async Task<IActionResult> Login([FromBody] UserDTO user, int userId) // her skal hentes bruger fra mongo
     {
         _logger.LogInformation("AuthService - Login function hit");
 
         using (HttpClient client = new HttpClient())
         {
+            _logger.LogInformation("HTTPClient intialized");
+
             string userServiceUrl = Environment.GetEnvironmentVariable("USER_SERVICE_URL"); // retreives URL to UserService from docker-compose.yml file
             string getUserEndpoint = "/user/getUser/" + userId;
+
+            _logger.LogInformation($"AuthService - {userServiceUrl + getUserEndpoint}");
 
             HttpResponseMessage response = await client.GetAsync(userServiceUrl + getUserEndpoint); // calls the UserService endpoint
 
