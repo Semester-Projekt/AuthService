@@ -17,48 +17,20 @@ public class AuthController : ControllerBase
 
     private readonly ILogger<AuthController> _logger;
     private readonly IConfiguration _config;
-    private UserRepository _userRepository;
 
-    public AuthController(ILogger<AuthController> logger, IConfiguration config, UserRepository userRepository)
+    public AuthController(ILogger<AuthController> logger, IConfiguration config)
     {
         _config = config;
         _logger = logger;
-        _userRepository = userRepository;
 
-        
+
         //Logger host information
         var hostName = System.Net.Dns.GetHostName();
         var ips = System.Net.Dns.GetHostAddresses(hostName);
         var _ipaddr = ips.First().MapToIPv4().ToString();
         _logger.LogInformation(1, $"Auth service responding from {_ipaddr}");
-        
-    }
-
-    
-    [HttpPost("addNewUser"), DisableRequestSizeLimit]
-    public async Task<IActionResult> Post([FromBody] User? user)
-    {
-        _logger.LogInformation("AddNewUser funk ramt");
-
-        var newUser = new User
-        {
-            UserName = user.UserName,
-            UserPassword = user.UserPassword,
-            UserEmail = user.UserEmail,
-            UserPhone = user.UserPhone,
-            UserAddress = user.UserAddress
-        };
-        _logger.LogInformation("Nyt user objekt lavet");
-
-
-        _userRepository.AddNewUser(user);
-        _logger.LogInformation("nyt user objekt added til User list");
-
-
-        return Ok(newUser);
 
     }
-
 
     private string GenerateJwtToken(string username)
     {
@@ -71,8 +43,8 @@ public class AuthController : ControllerBase
 
         var claims = new[]
         {
- new Claim(ClaimTypes.NameIdentifier, username)
- };
+            new Claim(ClaimTypes.NameIdentifier, username)
+        };
         var token = new JwtSecurityToken(
         _config["Issuer"],
         "http://localhost",
@@ -86,20 +58,36 @@ public class AuthController : ControllerBase
 
     [AllowAnonymous]
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] User user) // her skal hentes bruger fra mongo
+    public async Task<IActionResult> Login([FromBody] UserDTO user, int userId) // her skal hentes bruger fra mongo
     {
-        _logger.LogInformation("Login metode ramt");
+        _logger.LogInformation("AuthService - Login function hit");
 
-        var loginUser = await _userRepository.FindUserByUsernameAndPassword(user.UserName, user.UserPassword); // henter bruger
-        _logger.LogInformation(user.UserName);
-
-        if (user == null)
+        using (HttpClient client = new HttpClient())
         {
-            return Unauthorized();
-        }
+            string userServiceUrl = Environment.GetEnvironmentVariable("USER_SERVICE_URL"); // retreives URL to UserService from docker-compose.yml file
+            string getUserEndpoint = "/user/getUser/" + userId;
 
-        var token = GenerateJwtToken(user.UserName);
-        return Ok(new { token });
+            HttpResponseMessage response = await client.GetAsync(userServiceUrl + getUserEndpoint); // calls the UserService endpoint
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return StatusCode((int)response.StatusCode, "AuthService - Failed to retrieve UserId from UserService");
+            }
+
+            var userResponse = await response.Content.ReadFromJsonAsync<UserDTO>(); // deserializes the response from UserService
+
+            var loginuser = userResponse;
+            _logger.LogInformation(user.UserName);
+
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            var token = GenerateJwtToken(user.UserName);
+            return Ok(new { token });
+        }
+        return BadRequest("Failed to authenticate User with userId: + " + userId);
     }
 
 
