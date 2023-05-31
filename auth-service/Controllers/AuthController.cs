@@ -51,7 +51,7 @@ public class AuthController : ControllerBase
     }
 
 
-// VERSION_ENDEPUNKT
+    // VERSION_ENDEPUNKT
     [HttpGet("version")]
     public async Task<Dictionary<string, string>> GetVersion()
     {
