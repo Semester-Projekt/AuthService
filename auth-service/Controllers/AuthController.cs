@@ -107,8 +107,8 @@ public class AuthController : ControllerBase
 
 
     [AllowAnonymous]
-    [HttpPost("login/{userId}")]
-    public async Task<IActionResult> Login([FromBody] UserDTO user, int userId) // her skal hentes bruger fra mongo
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] UserDTO user) // her skal hentes bruger fra mongo
     {
         _logger.LogInformation("AuthService - Login function hit");
 
@@ -117,7 +117,7 @@ public class AuthController : ControllerBase
             _logger.LogInformation("HTTPClient intialized");
 
             string userServiceUrl = Environment.GetEnvironmentVariable("USER_SERVICE_URL"); // retreives URL to UserService from docker-compose.yml file
-            string getUserEndpoint = "/user/getUser/" + userId;
+            string getUserEndpoint = "/user/getallusers";
 
             _logger.LogInformation($"AuthService - {userServiceUrl + getUserEndpoint}");
 
@@ -128,20 +128,24 @@ public class AuthController : ControllerBase
                 return StatusCode((int)response.StatusCode, "AuthService - Failed to retrieve UserId from UserService");
             }
 
-            var userResponse = await response.Content.ReadFromJsonAsync<UserDTO>(); // deserializes the response from UserService
+            var userResponse = await response.Content.ReadFromJsonAsync<List<UserDTO>>(); // deserializes the response from UserService
 
-            var loginuser = userResponse;
-            _logger.LogInformation(user.UserName);
+            var allUsers = userResponse;
 
-            if (user == null)
+            var loginUser = userResponse.Where(a => a.UserName == user.UserName && a.UserPassword == user.UserPassword).FirstOrDefault();
+
+            _logger.LogInformation(loginUser.UserName);
+            _logger.LogInformation(loginUser.UserPassword);
+
+            if (loginUser == null)
             {
                 return Unauthorized();
             }
-
+            
             var token = GenerateJwtToken(user.UserName);
             return Ok(new { token });
         }
-        return BadRequest("Failed to authenticate User with userId: + " + userId);
+        return BadRequest("Failed to authenticate User with userName: ");
     }
 
 
